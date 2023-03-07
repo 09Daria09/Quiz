@@ -23,12 +23,12 @@ namespace Quiz
                 Login = login;
                 Password = password;
             }
-           
+
         }
         public static class UserService
         {
             private static readonly string filePath = "users.txt";
-            public static void InitPassword(User user)
+            public static bool InitPassword(User user)
             {
                 Console.Write("Ввеедите ваше имя: ");
                 user.Name = Console.ReadLine();
@@ -39,10 +39,10 @@ namespace Quiz
                 if (IsUserExist(user.Login, user.Password))
                 {
                     Console.WriteLine("Пользователь с таким логином и паролем уже существует");
-                    return;
+                    return false;
                 }
                 SaveUser(user);
-
+                return true;
             }
             public static void SaveUser(User user)
             {
@@ -51,7 +51,7 @@ namespace Quiz
                     sw.WriteLine($"{user.Name},{user.Login},{user.Password}");
                 }
             }
-            public static bool IsUserAuthenticated(string login, string password)
+            public static bool IsUserAuthenticated(User user)
             {
                 if (!File.Exists(filePath))
                 {
@@ -69,8 +69,9 @@ namespace Quiz
                         {
                             continue;
                         }
-                        if (userCredentials[1] == login && userCredentials[2] == password)
+                        if (userCredentials[1] == user.Login && userCredentials[2] == user.Password)
                         {
+                            user.Name = userCredentials[0];
                             Console.WriteLine("Вы успешно авторизованы");
                             return true;
                         }
@@ -136,7 +137,7 @@ namespace Quiz
                     }
                     Console.Write("Ответ: ");
                     char answer = Convert.ToChar(Console.ReadLine());
-
+                    Console.Clear();
                     if (answer == question.Answer.ToCharArray()[0])
                     {
                         Console.BackgroundColor = ConsoleColor.Green;
@@ -149,11 +150,137 @@ namespace Quiz
                         Console.WriteLine("Неверно. Правильный ответ: " + question.Answer);
                     }
                 }
+                Console.BackgroundColor = ConsoleColor.Black;
                 Console.WriteLine("Ваш счет: " + score + "/" + _questions.Count);
                 return score;
             }
         }
 
+        public static List<Question> Biology()
+        {
+            List<Question> historyQuestions = new List<Question>();
+            historyQuestions.Add(new Question
+            {
+                Text = "Какое вещество обеспечивает жизнедеятельность всех клеток на Земле?",
+                Options = new List<string> { "1.Кислород", "2.Углекислый газ", "3.Вода", "4.Азот" },
+                Answer = "3.Вода"
+            });
+            historyQuestions.Add(new Question
+            {
+                Text = "Какая молекула является основной формой энергии для живых организмов?",
+                Options = new List<string> { "1.АТФ", "2.РНК", "3.ДНК", "4.Глюкоза" },
+                Answer = "1.АТФ (аденозинтрифосфат) "
+            });
+            historyQuestions.Add(new Question
+            {
+                Text = "Какой процесс ответственен за передачу генетической информации от родителей к потомству?",
+                Options = new List<string> { "1.Фотосинтез", "2.Репликация ДНК", "3.Транскрипция РНК", "4.Трансляция РНК" },
+                Answer = "2.Репликация ДНК"
+            });
+            historyQuestions.Add(new Question
+            {
+                Text = "Какой органеллой является место проведения синтеза белков?",
+                Options = new List<string> { "1.Лизосома", "2.Гольджи", "3.Рибосома", "4.Митохондрия" },
+                Answer = "3.Рибосома"
+            });
+            historyQuestions.Add(new Question
+            {
+                Text = "Какой тип клеток обеспечивает иммунитет в организме человека?",
+                Options = new List<string> { "1.Мышечные клетки", "2.Нейроны", "3.Красные кровяные клетки", "4.Белые кровяные клетки" },
+                Answer = "4.Белые кровяные клетки (Лейкоциты)"
+            });
+            historyQuestions.Add(new Question
+            {
+                Text = "Какая часть растения отвечает за производство питательных веществ?",
+                Options = new List<string> { "1.Корневая система", "2.Листья", "3.Стебель", "4.Цветки" },
+                Answer = "2.Листья"
+            });
+            historyQuestions.Add(new Question
+            {
+                Text = "Как называется процесс, при котором растения используют энергию солнечного света для производства питательных веществ?",
+                Options = new List<string> { "1.Фотосинтез", "2.Респирация", "3.Ассимиляция", "4.Окисление" },
+                Answer = "1.Фотосинтез"
+            });
+            historyQuestions.Add(new Question
+            {
+                Text = "Как называется образование новых клеток в организме?",
+                Options = new List<string> { "1.Дифференциация", "2.Специализация", "3.Репликация", "4.Митоз" },
+                Answer = "4.Митоз"
+            });
+            historyQuestions.Add(new Question
+            {
+                Text = "Какой орган отвечает за производство инсулина?",
+                Options = new List<string> { "1.Печень", "2.Поджелудочная железа", "3.Почки", "4.Сердце" },
+                Answer = "2.Поджелудочная железа"
+            });
+            historyQuestions.Add(new Question
+            {
+                Text = "Какой орган отвечает за очищение крови от шлаков и отходов?",
+                Options = new List<string> { "1.Сердце", "2.Легкие", "3.Почки", "4.Печень" },
+                Answer = "3.Почки"
+            });
+            historyQuestions.Add(new Question
+            {
+                Text = "Какой элемент необходим для образования гемоглобина, отвечающего за транспортировку кислорода в организме?",
+                Options = new List<string> { "1.Железо", "2.Кальций", "3.Фосфор", "4.Магний" },
+                Answer = "1.Железо"
+            });
+            historyQuestions.Add(new Question
+            {
+                Text = "Какой из следующих процессов не является формой асексуального размножения?",
+                Options = new List<string> { "1.Двоение", "2.Отросток", "3.Партеногенез", "4.Мейоз" },
+                Answer = "4.Мейоз"
+            });
+            historyQuestions.Add(new Question
+            {
+                Text = "Какая группа животных является позвоночными, но не имеет челюстей?",
+                Options = new List<string> { "1.Рыбы", "2.Амфибии", "3.Рептилии", "4.Круглоротые" },
+                Answer = "1.Рыбы"
+            });
+            historyQuestions.Add(new Question
+            {
+                Text = "Как называется процесс, при котором организм перестраивается для выживания в условиях нехватки питательных веществ?",
+                Options = new List<string> { "1.Адаптация", "2.Метаболизм", "3.Катаболизм", "4.Криптобиоз" },
+                Answer = "1.Адаптация"
+            });
+            historyQuestions.Add(new Question
+            {
+                Text = "Какая часть мозга отвечает за координацию движений и равновесие?",
+                Options = new List<string> { "1.Гипоталамус", "2.Мозжечок", "3.Гиппокамп", "4.Кора головного мозга" },
+                Answer = "2.Мозжечок"
+            });
+            historyQuestions.Add(new Question
+            {
+                Text = "Какая группа животных отличается наличием хитина в своей клеточной стенке?",
+                Options = new List<string> { "1.Членистоногие", "2.Моллюски", "3.Хордовые", "4.Круглые черви" },
+                Answer = "1.Членистоногие"
+            });
+            historyQuestions.Add(new Question
+            {
+                Text = "Какой орган у кальмаров является аналогом кости у позвоночных животных?",
+                Options = new List<string> { "1.Мантия", "2.Жабры", "3.Хоботок", "4.Хитиновая пластина" },
+                Answer = "4.Хитиновая пластина"
+            });
+            historyQuestions.Add(new Question
+            {
+                Text = "Какие органы у человека отвечают за балансирование и координацию движений?",
+                Options = new List<string> { "1.Сердце и лёгкие", "2.Мозг и спинной мозг", "3.Печень и почки", "4.Желудок и кишечник" },
+                Answer = "2.Мозг и спинной мозг"
+            });
+            historyQuestions.Add(new Question
+            {
+                Text = "Какая клетка является наименьшей по размеру?",
+                Options = new List<string> { "1.Эритроцит", "2.Лейкоцит", "3.Бактерия", "4.Вирус" },
+                Answer = "4.Вирус"
+            });
+            historyQuestions.Add(new Question
+            {
+                Text = "Какой из перечисленных типов мышечной ткани является инволюционной, то есть уменьшающейся в объеме со временем?",
+                Options = new List<string> { "1.Скелетная мышечная ткань", "2.Гладкая мышечная ткань", "3.Кардиомиоциты", "4.Все типы мышечной ткани не являются инволюционными" },
+                Answer = "2.Гладкая мышечная ткань"
+            });
+            return historyQuestions;
+        }
         public static List<Question> History()
         {
             List<Question> historyQuestions = new List<Question>();
@@ -279,7 +406,7 @@ namespace Quiz
             });
             return historyQuestions;
         }
-        public static List<Question> Geography() 
+        public static List<Question> Geography()
         {
             List<Question> historyQuestions = new List<Question>();
             historyQuestions.Add(new Question
@@ -404,27 +531,278 @@ namespace Quiz
             });
             return historyQuestions;
         }
-
-        public static void WriteToResultFile(int rating, User user)
+        public static List<Question> Sundry()
         {
-           string fileAnswer = "AnswerResults.txt";
+            List<Question> historyQuestions = new List<Question>();
+            historyQuestions.Add(new Question
+            {
+                Text = "Какой вид морской жизни является самым большим на планете?",
+                Options = new List<string> { "1.Кит", "2.Кальмар", "3.Акула", "4.Медуза" },
+                Answer = "1.Кит"
+            });
+            historyQuestions.Add(new Question
+            {
+                Text = "Какой океан самый глубокий на Земле?",
+                Options = new List<string> { "1.Атлантический", "2.Индийский", "3.Тихий", "4.Южный" },
+                Answer = "3.Тихий"
+            });
+            historyQuestions.Add(new Question
+            {
+                Text = "Кто является автором книги \"Гарри Поттер\"?",
+                Options = new List<string> { "1.Дж. К. Роулин", "2.Джеймс Паттерсон", "3.Стивен Кинг", "4.Дэн Браун" },
+                Answer = "1.Дж. К. Роулин"
+            });
+            historyQuestions.Add(new Question
+            {
+                Text = "Какая планета является самой близкой к Солнцу?",
+                Options = new List<string> { "1.Марс", "2.Юпитер", "3.Венера", "4.Меркурий" },
+                Answer = "4.Меркурий"
+            });
+            historyQuestions.Add(new Question
+            {
+                Text = "Какой орган является самым большим в человеческом теле?\r\n",
+                Options = new List<string> { "1.Печень", "2.Сердце", "3.Легкие", "4.Кожа" },
+                Answer = "1.Байкал"
+            });
+            historyQuestions.Add(new Question
+            {
+                Text = "Какой вид музыки был придуман в Ямайке?",
+                Options = new List<string> { "1.Рэгги", "2.Рок", "3.Джаз", "4.Соул" },
+                Answer = "1.Рэгги"
+            });
+            historyQuestions.Add(new Question
+            {
+                Text = "Какая страна производит самое большое количество шоколада в мире?",
+                Options = new List<string> { "1.Швейцария", "2.Бельгия", "3.Франция", "4.Германия" },
+                Answer = "1.Швейцария"
+            });
+            historyQuestions.Add(new Question
+            {
+                Text = "Какое животное является символом Австралии?",
+                Options = new List<string> { "1.Кенгуру", "2.Коала", "3.Эму", "4.Вомбат" },
+                Answer = "1.Кенгуру"
+            });
+            historyQuestions.Add(new Question
+            {
+                Text = "Какой цвет имеет кровь кальмара?",
+                Options = new List<string> { "1.Красный", "2.Зеленый", "3.Синий", "4.Черный" },
+                Answer = "3.Синий"
+            });
+            historyQuestions.Add(new Question
+            {
+                Text = "ККакое растение используется для производства водки?",
+                Options = new List<string> { "1.Виноград", "2.Кукуруза", "3.Ячмень", "4.Картофель" },
+                Answer = "4.Картофель"
+            });
+            historyQuestions.Add(new Question
+            {
+                Text = "Какой воинственный народ заселял территорию современной Мексики?",
+                Options = new List<string> { "1.Ацтеки", "2.Майя", "3.Инки", "4.Спартанцы" },
+                Answer = "1.Ацтеки"
+            });
+            historyQuestions.Add(new Question
+            {
+                Text = "Какой монарх является длиннейшим правителем в истории Великобритании?",
+                Options = new List<string> { "1.Елизавета II", "2.Виктория", "3.Генрих VIII", "4.Эдуард VII" },
+                Answer = "2.Средиземное море"
+            });
+            historyQuestions.Add(new Question
+            {
+                Text = "Какой сорт яблок наиболее популярен в мире?",
+                Options = new List<string> { "1.Красный Делишес", "2.Голден Делишес", "3.Фуджи", "4.Гренни Смит" },
+                Answer = "2.Голден Делишес"
+            });
+            historyQuestions.Add(new Question
+            {
+                Text = "Какая страна является родиной шахмат?",
+                Options = new List<string> { "1.Китай", "2.Турция", "3.Индия", "4.Иран" },
+                Answer = "3.Индия"
+            });
+            historyQuestions.Add(new Question
+            {
+                Text = "Какой плотоядный зверь является самым быстрым на Земле?",
+                Options = new List<string> { "1.Тигр", "2.Лев", "3.Гепард", "4.Пума" },
+                Answer = "3.Гепард"
+            });
+            historyQuestions.Add(new Question
+            {
+                Text = "Какой главный инструмент в оркестре скрипачей?",
+                Options = new List<string> { "1.Виолончель", "2.Контрабас", "3.Скрипка", "4.Арфа" },
+                Answer = "3.Скрипка"
+            });
+            historyQuestions.Add(new Question
+            {
+                Text = "Какой музыкальный стиль был создан в США в 20-х годах XX века?",
+                Options = new List<string> { "1.Рок-н-ролл", "2.Регги", "3.Джаз", "4.Блюз" },
+                Answer = "3.Джаз"
+            });
+            historyQuestions.Add(new Question
+            {
+                Text = "Какой газ является самым распространенным в атмосфере Земли?",
+                Options = new List<string> { "1.Кислород", "2.Азот", "3.Углекислый газ", "4.Аргон" },
+                Answer = "2.Азот"
+            });
+            historyQuestions.Add(new Question
+            {
+                Text = "Какая страна изображена на флаге Швейцарии?",
+                Options = new List<string> { "1.Франция", "2.Италия", "3.Германия", "4.Австрия" },
+                Answer = "4.Австрия"
+            });
+            historyQuestions.Add(new Question
+            {
+                Text = "Какой металл является самым драгоценным?",
+                Options = new List<string> { "1.Золото", "2.Серебро", "3.Платина", "4.Медь" },
+                Answer = "1.Золото"
+            });
+            return historyQuestions;
+        }//
+        public static void WriteToResultFile(int rating, User user, string questions)
+        {
+            string fileAnswer =$"{questions}Results.txt";            
 
             using (StreamWriter sw = File.AppendText(fileAnswer))
             {
                 sw.WriteLine($"{user.Name} - {rating}/20");
             }
 
-        }        
-    
-    static void Main(string[] args)
+        }
+        public static bool Authorization(User user)
+        {
+            bool authorization = false;
+            Console.WriteLine("1.Авторизация\n2.Регистрация\n3.Выход");
+            int num = Convert.ToInt32(Console.ReadLine());
+            if (num == 1)
+            {
+                Console.Clear();
+                Console.Write("Введите ваш логин -> ");
+                user.Login = Console.ReadLine();
+                Console.Write("Введите ваш пароль -> ");
+                user.Password = Console.ReadLine(); 
+                authorization = UserService.IsUserAuthenticated(user);
+                if (!authorization)
+                {
+                    Interface();
+                    Console.WriteLine();
+                }
+            }
+            if (num == 2)
+            {
+                authorization = UserService.InitPassword(user);
+            }
+            if (num == 3)
+            {
+                Console.WriteLine("До скорых встреч :)");
+            }
+            return authorization;
+        }
+        public static void QuizChoice(User user)
+        {
+            Console.WriteLine("Выберите викторину\n1.История Украины\n2.Биология\n3.География\n4.Разное");
+            int value = Convert.ToInt32(Console.ReadLine());
+            Quiz quiz = null;
+            Console.Clear();
+            switch (value)
+            {
+                case 1:
+                    quiz = new Quiz(History());
+                    WriteToResultFile(quiz.Run(),user,"History");
+                    break;
+                case 2:
+                    quiz = new Quiz(Biology());
+                    WriteToResultFile(quiz.Run(), user, "Biology");;
+                    break;
+                case 3:
+                    quiz = new Quiz(Geography());
+                    WriteToResultFile(quiz.Run(), user, "Geography");
+                    break;
+                case 4:
+                    quiz = new Quiz(Sundry());
+                    WriteToResultFile(quiz.Run(), user, "Sundry");
+                    break;
+                default:
+                    Console.WriteLine("Некорректный ввод");
+                    QuizChoice(user);
+                    break;
+            }
+        }
+        public static void ShowResults(string pathFile, User user)
+        {
+
+            if (!File.Exists(pathFile))
+            {
+                Console.WriteLine("Файла нет");
+                return;
+            }
+
+            using (StreamReader sr = File.OpenText(pathFile))
+            {
+                string line;
+                while ((line = sr.ReadLine()) != null)
+                {
+                    string[] userCredentials = line.Split(' ');
+                    if (userCredentials.Length != 3)
+                    {
+                        continue;
+                    }
+                    if (userCredentials[0] == user.Name)
+                    {
+                        Console.WriteLine($"{userCredentials[0]} {userCredentials[1]} {userCredentials[2]}");                        
+                    }
+                }
+            }
+        }
+        public static void PastQuizResults(User user)
+        {
+            string fileHistory = "HistoryResults.txt";
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.WriteLine("* Результаты по истории");
+            Console.ForegroundColor = ConsoleColor.White;
+            ShowResults(fileHistory, user);
+
+            string fileBiology = "BiologyResults.txt";
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.WriteLine("* Результаты по биологии");
+            Console.ForegroundColor = ConsoleColor.White;
+            ShowResults(fileBiology, user);
+
+            string fileGeography = "GeographyResults.txt";
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.WriteLine("* Результаты по географии");
+            Console.ForegroundColor = ConsoleColor.White;
+            ShowResults(fileGeography, user);
+
+            string filSundry = "SundryResults.txt";
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.WriteLine("* Результаты по разному");
+            Console.ForegroundColor = ConsoleColor.White;
+            ShowResults(filSundry, user);
+        }
+        public static void Interface()
         {
             User user = new User();
-            UserService.InitPassword(user);
-            UserService.IsUserAuthenticated(user.Login, user.Password);
+            if (Authorization(user))
+            {
+                Console.WriteLine("1.Cтартовать новую викторину\n2.Посмотреть результаты своих прошлых викторин\n3.Посмотреть Топ-20 по конкретной викторине\n4.Настройки\n5.Выход");
+                int num = Convert.ToInt32(Console.ReadLine());
+                Console.Clear();
+                if (num == 1)
+                {
+                    QuizChoice(user);
+                }
+                if(num == 2)
+                {
+                    PastQuizResults(user);
+                }
+            }
 
-            Quiz quiz = new Quiz(History());
-            int answer = quiz.Run();
-            WriteToResultFile(answer, user);
+        }
+        static void Main(string[] args)
+        {
+            Interface();
+
+            //Quiz quiz = new Quiz(History());
+            //int answer = quiz.Run();
+            //WriteToResultFile(answer, user);
         }
     }
 }
