@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using static Quiz.Program;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Quiz
 {
@@ -72,12 +75,18 @@ namespace Quiz
                         if (userCredentials[1] == user.Login && userCredentials[2] == user.Password)
                         {
                             user.Name = userCredentials[0];
-                            Console.WriteLine("Вы успешно авторизованы");
+                            Console.ForegroundColor = ConsoleColor.Green;
+                            Console.WriteLine($"Вы успешно авторизованы {user.Name}");
+                            Console.ForegroundColor = ConsoleColor.White;
+                            Console.ReadKey();
                             return true;
                         }
                     }
                 }
+                Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("Вас нет в базе данных");
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.ReadKey();
                 return false;
             }
             public static bool IsUserExist(string login, string password)
@@ -107,7 +116,6 @@ namespace Quiz
                 return false;
             }
         }
-        /// 
 
         public class Question
         {
@@ -560,9 +568,9 @@ namespace Quiz
             });
             historyQuestions.Add(new Question
             {
-                Text = "Какой орган является самым большим в человеческом теле?\r\n",
+                Text = "Какой орган является самым большим в человеческом теле?",
                 Options = new List<string> { "1.Печень", "2.Сердце", "3.Легкие", "4.Кожа" },
-                Answer = "1.Байкал"
+                Answer = "4.Кожа"
             });
             historyQuestions.Add(new Question
             {
@@ -590,7 +598,7 @@ namespace Quiz
             });
             historyQuestions.Add(new Question
             {
-                Text = "ККакое растение используется для производства водки?",
+                Text = "Какое растение используется для производства водки?",
                 Options = new List<string> { "1.Виноград", "2.Кукуруза", "3.Ячмень", "4.Картофель" },
                 Answer = "4.Картофель"
             });
@@ -604,7 +612,7 @@ namespace Quiz
             {
                 Text = "Какой монарх является длиннейшим правителем в истории Великобритании?",
                 Options = new List<string> { "1.Елизавета II", "2.Виктория", "3.Генрих VIII", "4.Эдуард VII" },
-                Answer = "2.Средиземное море"
+                Answer = "1.Елизавета II"
             });
             historyQuestions.Add(new Question
             {
@@ -655,45 +663,96 @@ namespace Quiz
                 Answer = "1.Золото"
             });
             return historyQuestions;
-        }//
+        }
+        public static void SortLider(string questions)
+        {
+            string filePath = $"{questions}Results.txt";
+            List<string> lines = File.ReadAllLines(filePath).ToList();
+
+            List<KeyValuePair<string, int>> values = new List<KeyValuePair<string, int>>();
+
+            foreach (string line in lines)
+            {
+                string[] parts = line.Split(new[] { '-', ',' }, StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length != 2) continue;
+                string name = parts[0].Trim();
+                int percent = int.Parse(parts[1].Replace("%", "").Trim());
+
+                values.Add(new KeyValuePair<string, int>(name, percent));
+            }
+
+            values = values.OrderByDescending(x => x.Value).ToList();
+
+            lines.Clear();
+
+            int i = 0;
+            foreach (KeyValuePair<string, int> kvp in values)
+            {
+                string line = kvp.Key + " - " + kvp.Value.ToString() + "%";
+                lines.Add(line);
+            }
+
+            Console.WriteLine($"\t*** Топ-20 ***");
+            foreach (KeyValuePair<string, int> kvp in values)
+            {
+                i++;
+                string line = kvp.Key + " - " + kvp.Value.ToString() + "%";
+                Console.WriteLine($"{i++}.{line}");
+                if (i > 20)
+                    return;
+            }
+            Console.WriteLine("__________________________________________");
+            File.WriteAllLines(filePath, lines);
+
+        }
         public static void WriteToResultFile(int rating, User user, string questions)
         {
-            string fileAnswer =$"{questions}Results.txt";            
+            string fileAnswer = $"{questions}Results.txt";
 
             using (StreamWriter sw = File.AppendText(fileAnswer))
             {
-                sw.WriteLine($"{user.Name} - {rating}/20");
+                sw.WriteLine($"{user.Name} - {(double)rating / 20 * 100}");
             }
 
         }
         public static bool Authorization(User user)
         {
             bool authorization = false;
-            Console.WriteLine("1.Авторизация\n2.Регистрация\n3.Выход");
-            int num = Convert.ToInt32(Console.ReadLine());
-            if (num == 1)
+            bool IsInvalid = false;
+            while (!IsInvalid)
             {
                 Console.Clear();
-                Console.Write("Введите ваш логин -> ");
-                user.Login = Console.ReadLine();
-                Console.Write("Введите ваш пароль -> ");
-                user.Password = Console.ReadLine(); 
-                authorization = UserService.IsUserAuthenticated(user);
-                if (!authorization)
+                Console.WriteLine("1.Авторизация\n2.Регистрация\n3.Выход");
+                int num = Convert.ToInt32(Console.ReadLine());
+                if (num == 1)
                 {
-                    Interface();
-                    Console.WriteLine();
+                    Console.Clear();
+                    Console.Write("Введите ваш логин -> ");
+                    user.Login = Console.ReadLine();
+                    Console.Write("Введите ваш пароль -> ");
+                    user.Password = Console.ReadLine();
+                    authorization = UserService.IsUserAuthenticated(user);
+                    if (authorization)
+                    {
+                        IsInvalid = true;
+                    }
+                }
+                if (num == 2)
+                {
+                    Console.Clear();
+                    authorization = UserService.InitPassword(user);
+                    if (authorization)
+                    {
+                        IsInvalid = true;
+                    }
+                }
+                if (num == 3)
+                {
+                    Console.WriteLine("До скорых встреч :)");
                 }
             }
-            if (num == 2)
-            {
-                authorization = UserService.InitPassword(user);
-            }
-            if (num == 3)
-            {
-                Console.WriteLine("До скорых встреч :)");
-            }
-            return authorization;
+                return authorization;
+            
         }
         public static void QuizChoice(User user)
         {
@@ -705,11 +764,11 @@ namespace Quiz
             {
                 case 1:
                     quiz = new Quiz(History());
-                    WriteToResultFile(quiz.Run(),user,"History");
+                    WriteToResultFile(quiz.Run(), user, "History");
                     break;
                 case 2:
                     quiz = new Quiz(Biology());
-                    WriteToResultFile(quiz.Run(), user, "Biology");;
+                    WriteToResultFile(quiz.Run(), user, "Biology"); ;
                     break;
                 case 3:
                     quiz = new Quiz(Geography());
@@ -737,6 +796,7 @@ namespace Quiz
             using (StreamReader sr = File.OpenText(pathFile))
             {
                 string line;
+                bool check = true;
                 while ((line = sr.ReadLine()) != null)
                 {
                     string[] userCredentials = line.Split(' ');
@@ -746,8 +806,13 @@ namespace Quiz
                     }
                     if (userCredentials[0] == user.Name)
                     {
-                        Console.WriteLine($"{userCredentials[0]} {userCredentials[1]} {userCredentials[2]}");                        
+                        Console.WriteLine($"{userCredentials[0]} {userCredentials[1]} {userCredentials[2]}");
+                        check = false;
                     }
+                }
+                if (check)
+                {
+                    Console.WriteLine("Вы не проходили данную викторину");
                 }
             }
         }
@@ -777,32 +842,124 @@ namespace Quiz
             Console.ForegroundColor = ConsoleColor.White;
             ShowResults(filSundry, user);
         }
+        public static void LeaderboardSelection()
+        {
+            Console.WriteLine("По какой викторине вы хотите увидеть таблицу лидеров\n1.История Украины\n2.Биология\n3.География\n4.Разное");
+            int value = Convert.ToInt32(Console.ReadLine());
+            switch (value)
+            {
+                case 1:
+                    SortLider("History");
+                    break;
+                case 2:
+                    SortLider("Biology");
+                    break;
+                case 3:
+                    SortLider("Geography");
+                    break;
+                case 4:
+                    SortLider("Sundry");
+                    break;
+                default:
+                    Console.WriteLine("Некорректный ввод");
+                    LeaderboardSelection();
+                    break;
+            }
+        }
+        public static void ChangeCredentials(User user)
+        {
+            string filePath = "users.txt";
+            Console.Write("Введите новый логин -> ");
+            string newUsername = Console.ReadLine();
+            Console.Write("Введите новый пароль -> ");
+            string newPassword = Console.ReadLine();
+
+            string[] lines = File.ReadAllLines(filePath);
+
+            for (int i = 0; i < lines.Length; i++)
+            {
+                string[] users = lines[i].Split(',');
+                string username = users[0];
+                string password = users[1];
+
+                if (username == user.Name)
+                {
+                    users[1] = newUsername;
+                    users[2] = newPassword;
+
+                    lines[i] = string.Join(",", users);
+                }
+            }
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine($"Вы успешно изменили пароль и логин {user.Name}");
+            Console.ForegroundColor = ConsoleColor.White;
+            File.WriteAllLines(filePath, lines);
+        }
+    
+        
+        public static void ActionChoice(User user)
+        {
+            Console.Clear();
+            Console.WriteLine("1.Cтартовать новую викторину\n2.Посмотреть результаты своих прошлых викторин\n3.Посмотреть Топ-20 по конкретной викторине\n4.Настройки\n5.Выход");
+            int num = Convert.ToInt32(Console.ReadLine());
+            Console.Clear();
+            if (num == 1)
+            {
+                QuizChoice(user);
+                Console.ReadKey();
+                Console.Clear();
+                ActionChoice(user);
+            }
+            if (num == 2)
+            {
+                PastQuizResults(user);
+                Console.ReadKey();
+                Console.Clear();
+                ActionChoice(user);
+            }
+            if (num == 3)
+            {
+                LeaderboardSelection();
+                Console.ReadKey();
+                Console.Clear();
+                ActionChoice(user);
+            }
+            if (num == 4)
+            {
+                Console.WriteLine("Желаете изминить логин и пароль?\n1.Да\n2.Нет");
+                int a = Convert.ToInt32(Console.ReadLine());
+                if(a == 1)
+                {
+                    ChangeCredentials(user);
+                    Console.ReadKey();
+                    Console.Clear();
+                    ActionChoice(user);
+                }
+                else
+                ActionChoice(user);
+
+            }
+            if (num == 5)
+            {
+                Console.WriteLine("До скорых встреч :)");
+            }
+
+        }
         public static void Interface()
         {
             User user = new User();
             if (Authorization(user))
             {
-                Console.WriteLine("1.Cтартовать новую викторину\n2.Посмотреть результаты своих прошлых викторин\n3.Посмотреть Топ-20 по конкретной викторине\n4.Настройки\n5.Выход");
-                int num = Convert.ToInt32(Console.ReadLine());
-                Console.Clear();
-                if (num == 1)
-                {
-                    QuizChoice(user);
-                }
-                if(num == 2)
-                {
-                    PastQuizResults(user);
-                }
+                ActionChoice(user);
             }
 
         }
         static void Main(string[] args)
         {
-            Interface();
-
-            //Quiz quiz = new Quiz(History());
-            //int answer = quiz.Run();
-            //WriteToResultFile(answer, user);
+            // Interface();
+            int a = 10;
+            int b = 2;
+            Console.WriteLine(a * b);
         }
     }
 }
