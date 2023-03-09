@@ -156,13 +156,15 @@ namespace Quiz
                     if (answer == question.Answer.ToCharArray()[0])
                     {
                         Console.BackgroundColor = ConsoleColor.Green;
-                        Console.WriteLine("Верно!");
+                        Console.OutputEncoding = System.Text.Encoding.Unicode;
+                        Console.WriteLine("Верно! (⁀ᗢ⁀)");
                         score++;
                     }
                     else
                     {
                         Console.BackgroundColor = ConsoleColor.Red;
-                        Console.WriteLine("Неверно. Правильный ответ: " + question.Answer);
+                        Console.OutputEncoding = System.Text.Encoding.Unicode;
+                        Console.WriteLine("Неверно (╯°□°）╯︵ ┻━┻ Правильный ответ: " + question.Answer);
                     }
                 }
                 Console.BackgroundColor = ConsoleColor.Black;
@@ -787,7 +789,6 @@ namespace Quiz
         {
             Interface();
         }
-
     }
 }
 
