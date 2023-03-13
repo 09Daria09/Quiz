@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.Xml.Serialization;
@@ -41,11 +42,35 @@ namespace Quiz
                 user.Password = Console.ReadLine();
                 if (IsUserExist(user.Login, user.Password))
                 {
-                    Console.WriteLine("Пользователь с таким логином и паролем уже существует");
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.OutputEncoding = System.Text.Encoding.Unicode;
+                    Console.WriteLine("Пользователь с таким логином и паролем уже существует (╯°□°）╯︵ ┻━┻");
+                    Console.ReadLine();
+                    Console.ForegroundColor = ConsoleColor.White;
                     return false;
                 }
-                SaveUser(user);
-                return true;
+                if (!IsValidPassword(user.Password))
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.OutputEncoding = System.Text.Encoding.Unicode;
+                    Console.WriteLine("Пароль не соответствует требованиям (╯°□°）╯︵ ┻━┻:");
+                    Console.ForegroundColor = ConsoleColor.White;
+
+                    Console.WriteLine("- должен быть не меньше 4 символов и не больше 8");
+                    Console.WriteLine("- должна быть хотя бы одна заглавная буква");
+                    Console.ReadLine();
+                    return false;
+                }
+                else
+                {
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.OutputEncoding = System.Text.Encoding.Unicode;
+                    Console.WriteLine("Вы успешно зарегистрировались (⁀ᗢ⁀)");
+                    Console.ForegroundColor = ConsoleColor.White;
+                    SaveUser(user);
+                    Console.ReadLine();
+                    return true;
+                }
             }
             public static void SaveUser(User user)
             {
@@ -78,7 +103,7 @@ namespace Quiz
                             Console.ForegroundColor = ConsoleColor.Green;
                             Console.OutputEncoding = System.Text.Encoding.Unicode;
                             Console.WriteLine($"Вы успешно авторизованы {user.Name} (⁀ᗢ⁀)");
-                            if(user.Login == "admin" && user.Password == "admin")
+                            if (user.Login == "admin" && user.Password == "admin")
                             {
                                 Console.OutputEncoding = System.Text.Encoding.Unicode;
                                 Console.WriteLine("✬ Вы вошли как администратор ✬");
@@ -142,17 +167,47 @@ namespace Quiz
             public int Run()
             {
                 int score = 0;
+                bool Test = false;
+                char answer = '\0';
                 foreach (Question question in _questions)
                 {
-                    Console.BackgroundColor = ConsoleColor.Black;
-                    Console.WriteLine(question.Text);
-                    foreach (string option in question.Options)
+                    while (!Test)
                     {
-                        Console.WriteLine(option);
+                        Console.BackgroundColor = ConsoleColor.Black;
+                        Console.WriteLine(question.Text);
+                        foreach (string option in question.Options)
+                        {
+                            Console.WriteLine(option);
+                        }
+                        Console.Write("Ответ: ");
+                        try
+                        {
+                            answer = Convert.ToChar(Console.ReadLine());
+                            if (answer.ToString().Length != 1)
+                            {
+                                throw new FormatException("Длина строки должна составлять один знак.");
+                            }
+                            if (answer == '1' || answer == '2' || answer == '3' || answer == '4')
+                            {
+                                Test = true;
+                            }
+                            else
+                            {
+                                throw new Exception("Вы ввели некорректное значение");
+                            }
+                        }
+                        catch (FormatException ex)
+                        {
+                            Console.WriteLine(ex.Message);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine("\n" + ex.Message + "\n");
+                        }
+                        Console.Clear();
+
                     }
-                    Console.Write("Ответ: ");
-                    char answer = Convert.ToChar(Console.ReadLine());
-                    Console.Clear();
+                    Test = false;
                     if (answer == question.Answer.ToCharArray()[0])
                     {
                         Console.BackgroundColor = ConsoleColor.Green;
@@ -203,7 +258,7 @@ namespace Quiz
         public static List<Question> History()
         {
             List<Question> historyQuestions = ReadQuestionsFromXml("history.xml");
-           
+
             return historyQuestions;
         }
         public static List<Question> Geography()
@@ -215,11 +270,25 @@ namespace Quiz
         public static List<Question> Sundry()
         {
             List<Question> sundryQuestions = ReadQuestionsFromXml("sundry.xml");
-           
+
             return sundryQuestions;
         }
         ///
-       
+
+        public static bool IsValidPassword(string password)
+        {
+            if (password.Length < 4 || password.Length > 8)
+            {
+                return false;
+            }
+
+            if (!Regex.IsMatch(password, "[A-Z]|[А-Я]"))
+            {
+                return false;
+            }
+
+            return true;
+        }
         public static void SortLider(string questions)
         {
             string filePath = $"{questions}Results.txt";
@@ -288,7 +357,18 @@ namespace Quiz
                 {
                     Console.Clear();
                     Console.WriteLine("Желаете видоизменить данную викторину?\n1.Да\n2.Нет");
-                    num = Convert.ToInt32(Console.ReadLine());
+                    try
+                    {
+                        num = Convert.ToInt32(Console.ReadLine());
+                        if (num.ToString().Length != 1)
+                        {
+                            throw new FormatException("Длина строки должна составлять один знак.");
+                        }
+                    }
+                    catch (FormatException ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
                     if (num == 1)
                     {
                         ModifyQuestions(file);
@@ -395,26 +475,44 @@ namespace Quiz
         }
         public static void LeaderboardSelection()
         {
-            Console.WriteLine("По какой викторине вы хотите увидеть таблицу лидеров\n1.История Украины\n2.Биология\n3.География\n4.Разное");
-            int value = Convert.ToInt32(Console.ReadLine());
-            switch (value)
+            bool test = false;
+            int value = 0;
+            while (!test)
             {
-                case 1:
-                    SortLider("History");
-                    break;
-                case 2:
-                    SortLider("Biology");
-                    break;
-                case 3:
-                    SortLider("Geography");
-                    break;
-                case 4:
-                    SortLider("Sundry");
-                    break;
-                default:
-                    Console.WriteLine("Некорректный ввод");
-                    LeaderboardSelection();
-                    break;
+                Console.Clear();
+                Console.WriteLine("По какой викторине вы хотите увидеть таблицу лидеров\n1.История Украины\n2.Биология\n3.География\n4.Разное");
+                try
+                {
+                    value = Convert.ToInt32(Console.ReadLine());
+                    if (value.ToString().Length != 1)
+                    {
+                        throw new FormatException("Длина строки должна составлять один знак.");
+                    }
+                }
+                catch (FormatException ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+
+                switch (value)
+                {
+                    case 1:
+                        SortLider("History");
+                        return;
+                    case 2:
+                        SortLider("Biology");
+                        return;
+                    case 3:
+                        SortLider("Geography");
+                        return;
+                    case 4:
+                        SortLider("Sundry");
+                        return;
+                    default:
+                        Console.WriteLine("Некорректный ввод");
+                        LeaderboardSelection();
+                        return;
+                }
             }
         }
         public static void ChangeCredentials(User user)
@@ -427,6 +525,8 @@ namespace Quiz
             while (!IsLook)
             {
                 Console.Clear();
+                newUsername = null;
+                newPassword = null;
                 Console.WriteLine("1.Скрыть пароль(◠‿◠)   2.Показать пароль(◕‿◕)");
                 int newNum = Convert.ToInt32(Console.ReadLine());
                 if (newNum == 1)
@@ -457,6 +557,23 @@ namespace Quiz
                         }
                     } while (key1.Key != ConsoleKey.Enter);
                     Console.WriteLine();
+                    
+                    if (!IsValidPassword(newPassword))
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.OutputEncoding = System.Text.Encoding.Unicode;
+                        Console.WriteLine("Пароль не соответствует требованиям (╯°□°）╯︵ ┻━┻:");
+                        Console.ForegroundColor = ConsoleColor.White;
+
+                        Console.WriteLine("- должен быть не меньше 4 символов и не больше 8");
+                        Console.WriteLine("- должна быть хотя бы одна заглавная буква");
+                        Console.ReadLine();
+                    }
+                    else
+                    {
+                        IsLook = true;
+                    }
+                    
                 }
                 if (newNum == 2)
                 {
@@ -466,7 +583,21 @@ namespace Quiz
 
                     Console.Write("Введите новый пароль -> ");
                     newPassword = Console.ReadLine();
-                    IsLook = true;
+                    if (!IsValidPassword(newPassword))
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.OutputEncoding = System.Text.Encoding.Unicode;
+                        Console.WriteLine("Пароль не соответствует требованиям (╯°□°）╯︵ ┻━┻:");
+                        Console.ForegroundColor = ConsoleColor.White;
+
+                        Console.WriteLine("- должен быть не меньше 4 символов и не больше 8");
+                        Console.WriteLine("- должна быть хотя бы одна заглавная буква");
+                        Console.ReadLine();
+                    }
+                    else
+                    {
+                        IsLook = true;
+                    }
                 }
             }
             string[] lines = File.ReadAllLines(filePath);
@@ -493,49 +624,86 @@ namespace Quiz
 
         public static void ActionChoice(User user)
         {
+            int num = 0;
+            bool test = false;
             Console.Clear();
-            Console.WriteLine("1.Cтартовать новую викторину\n2.Посмотреть результаты своих прошлых викторин\n3.Посмотреть Топ-20 по конкретной викторине\n4.Настройки\n5.Выход");
-            int num = Convert.ToInt32(Console.ReadLine());
-            Console.Clear();
-            if (num == 1)
+            while (!test)
             {
-                QuizChoice(user);
-                Console.ReadKey();
-                Console.Clear();
-                ActionChoice(user);
-            }
-            if (num == 2)
-            {
-                PastQuizResults(user);
-                Console.ReadKey();
-                Console.Clear();
-                ActionChoice(user);
-            }
-            if (num == 3)
-            {
-                LeaderboardSelection();
-                Console.ReadKey();
-                Console.Clear();
-                ActionChoice(user);
-            }
-            if (num == 4)
-            {
-                Console.WriteLine("Желаете изминить логин и пароль?\n1.Да\n2.Нет");
-                int a = Convert.ToInt32(Console.ReadLine());
-                if (a == 1)
+                Console.WriteLine("1.Cтартовать новую викторину\n2.Посмотреть результаты своих прошлых викторин\n3.Посмотреть Топ-20 по конкретной викторине\n4.Настройки\n5.Выход");
+                try
                 {
-                    ChangeCredentials(user);
+                    num = Convert.ToInt32(Console.ReadLine());
+                    if (num.ToString().Length != 1)
+                    {
+                        throw new FormatException("Длина строки должна составлять один знак.");
+                    }
+                }
+                catch (FormatException ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+                Console.Clear();
+
+                if (num == 1)
+                {
+                    QuizChoice(user);
                     Console.ReadKey();
                     Console.Clear();
                     ActionChoice(user);
                 }
-                else
+                if (num == 2)
+                {
+                    PastQuizResults(user);
+                    Console.ReadKey();
+                    Console.Clear();
                     ActionChoice(user);
+                }
+                if (num == 3)
+                {
+                    LeaderboardSelection();
+                    Console.ReadKey();
+                    Console.Clear();
+                    ActionChoice(user);
+                }
+                if (num == 4)
+                {
+                    int a = 0;
+                    //bool test1 = false;
+                    while (true)
+                    {
+                        Console.Clear();
+                        Console.WriteLine("Желаете изминить логин и пароль?\n1.Да\n2.Нет");
+                        try
+                        {
+                            a = Convert.ToInt32(Console.ReadLine());
+                            if (a.ToString().Length != 1)
+                            {
+                                throw new FormatException("Длина строки должна составлять один знак.");
+                            }
+                        }
+                        catch (FormatException ex)
+                        {
+                            Console.WriteLine(ex.Message);
+                        }
+                        if (a == 1)
+                        {
+                            ChangeCredentials(user);
+                            Console.ReadKey();
+                            Console.Clear();
+                            ActionChoice(user);
+                        }
+                        if (a == 2)
+                        {
+                            ActionChoice(user);
+                        }
+                    }
 
-            }
-            if (num == 5)
-            {
-                Console.WriteLine("До скорых встреч :)");
+                }
+                if (num == 5)
+                {
+                    Console.WriteLine("До скорых встреч :)");
+                    Environment.Exit(0);
+                }
             }
 
         }
@@ -545,18 +713,44 @@ namespace Quiz
             bool IsInvalid = false;
             while (!IsInvalid)
             {
+                int num = 0;
                 Console.Clear();
                 Console.WriteLine("1.Авторизация\n2.Регистрация\n3.Выход");
-                int num = Convert.ToInt32(Console.ReadLine());
+                try
+                {
+                    num = Convert.ToInt32(Console.ReadLine());
+                    if (num.ToString().Length != 1)
+                    {
+                        throw new FormatException("Длина строки должна составлять один знак.");
+                    }
+                }
+                catch (FormatException ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
                 if (num == 1)
                 {
                     bool IsLook = false;
                     while (!IsLook)
                     {
                         Console.Clear();
+                        int newNum = 0;
+                        user.Login = null;
+                        user.Password = null;
                         Console.OutputEncoding = System.Text.Encoding.Unicode;
                         Console.WriteLine("1.Скрыть пароль(◠‿◠)   2.Показать пароль(◕‿◕)");
-                        int newNum = Convert.ToInt32(Console.ReadLine());
+                        try
+                        {
+                            newNum = Convert.ToInt32(Console.ReadLine());
+                            if (num.ToString().Length != 1)
+                            {
+                                throw new FormatException("Длина строки должна составлять один знак.");
+                            }
+                        }
+                        catch (FormatException ex)
+                        {
+                            Console.WriteLine(ex.Message);
+                        }
                         if (newNum == 1)
                         {
                             Console.Clear();
